@@ -46,7 +46,7 @@ export default function ForgotPasswordPage() {
                 new password.
               </div>
               <div className="flex gap-3">
-                <Button variant="outline" className="flex-1" onClick={() => setIsSubmitted(false)}>
+                <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setIsSubmitted(false)}>
                   Try Again
                 </Button>
                 <Link href="/login" className="flex-1">
@@ -94,3 +94,21 @@ export default function ForgotPasswordPage() {
                 {isLoading ? "Sending..." : "Save"}
               </Button>
             </div>
+
+            <div className="text-center text-sm text-gray-500 mt-8">
+              On clicking save, the user will receive an Email to the given Email id with the reset link to define the
+              new password.
+            </div>
+
+            <div className="text-center">
+              <Link href="/login" className="inline-flex items-center gap-2 text-blue-600 hover:underline">
+                <ArrowLeft className="h-4 w-4" />
+                Back to Login
+              </Link>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
