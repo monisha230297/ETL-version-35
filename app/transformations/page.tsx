@@ -1,12 +1,10 @@
 "use client"
-
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { ArrowLeft, Database, Code, Sparkles, Wand2 } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Database, Code, Sparkles, Wand2 } from "lucide-react"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import Link from "next/link"
 
-export default function TransformationsPage() {
+export default function TransformationAgents() {
   const transformationTypes = [
     {
       id: "no-code",
@@ -14,20 +12,23 @@ export default function TransformationsPage() {
       description: "Visual drag-and-drop transformation builder",
       icon: Wand2,
       href: "/transformations/no-code",
+      color: "text-purple-600",
     },
     {
       id: "sql",
       title: "SQL",
-      description: "SQL-based data transformation queries",
+      description: "Write SQL queries for data transformation",
       icon: Database,
       href: "/transformations/sql",
+      color: "text-blue-600",
     },
     {
       id: "python",
       title: "Python/PySpark",
-      description: "Python and PySpark code for data transformation",
+      description: "Use Python or PySpark for complex transformations",
       icon: Code,
       href: "/transformations/python",
+      color: "text-green-600",
     },
     {
       id: "cleaning",
@@ -35,6 +36,7 @@ export default function TransformationsPage() {
       description: "Data cleaning and fuzzy matching tools",
       icon: Sparkles,
       href: "/transformations/cleaning",
+      color: "text-orange-600",
     },
   ]
 
@@ -42,36 +44,26 @@ export default function TransformationsPage() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold">Transformation Agents</h1>
-            <p className="text-muted-foreground">Choose your data transformation method</p>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold">Transformation Agents</h1>
+          <p className="text-muted-foreground mt-2">Choose your preferred transformation method</p>
         </div>
 
-        {/* Transformation Cards in One Row */}
+        {/* Transformation Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {transformationTypes.map((type) => {
             const IconComponent = type.icon
             return (
               <Link key={type.id} href={type.href}>
                 <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group">
-                  <CardContent className="p-8 text-center space-y-4">
-                    <div className="flex justify-center">
-                      <div className="p-4 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
-                        <IconComponent className="h-12 w-12 text-primary" />
-                      </div>
+                  <CardHeader className="text-center">
+                    <div className="mx-auto mb-4 p-3 rounded-full bg-gray-100 group-hover:bg-gray-200 transition-colors">
+                      <IconComponent className={`h-8 w-8 ${type.color}`} />
                     </div>
-                    <div>
-                      <h3 className="text-xl font-semibold mb-2">{type.title}</h3>
-                      <p className="text-sm text-muted-foreground">{type.description}</p>
-                    </div>
+                    <CardTitle className="text-lg">{type.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground text-center">{type.description}</p>
                   </CardContent>
                 </Card>
               </Link>

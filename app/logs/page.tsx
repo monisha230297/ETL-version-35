@@ -28,7 +28,7 @@ export default function ScheduleLogs() {
   const logs = [
     {
       id: 1,
-      jobName: "Daily User Sync",
+      scheduleName: "Daily User Sync",
       status: "completed",
       startTime: "2024-01-23 02:00:00",
       endTime: "2024-01-23 02:05:32",
@@ -41,7 +41,7 @@ export default function ScheduleLogs() {
     },
     {
       id: 2,
-      jobName: "Weekly Sales Report",
+      scheduleName: "Weekly Sales Report",
       status: "completed",
       startTime: "2024-01-22 06:00:00",
       endTime: "2024-01-22 06:08:15",
@@ -54,7 +54,7 @@ export default function ScheduleLogs() {
     },
     {
       id: 3,
-      jobName: "Inventory Update",
+      scheduleName: "Inventory Update",
       status: "failed",
       startTime: "2024-01-22 01:00:00",
       endTime: "2024-01-22 01:02:45",
@@ -67,7 +67,7 @@ export default function ScheduleLogs() {
     },
     {
       id: 4,
-      jobName: "Customer Analytics",
+      scheduleName: "Customer Analytics",
       status: "running",
       startTime: "2024-01-23 08:00:00",
       endTime: null,
@@ -80,7 +80,7 @@ export default function ScheduleLogs() {
     },
     {
       id: 5,
-      jobName: "Daily User Sync",
+      scheduleName: "Daily User Sync",
       status: "completed",
       startTime: "2024-01-22 02:00:00",
       endTime: "2024-01-22 02:04:18",
@@ -95,7 +95,7 @@ export default function ScheduleLogs() {
 
   const filteredLogs = logs.filter((log) => {
     const matchesStatus = filterStatus === "all" || log.status === filterStatus
-    const matchesSearch = log.jobName.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = log.scheduleName.toLowerCase().includes(searchTerm.toLowerCase())
     return matchesStatus && matchesSearch
   })
 
@@ -145,7 +145,7 @@ export default function ScheduleLogs() {
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search by job name..."
+                    placeholder="Search by schedule name..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -183,7 +183,7 @@ export default function ScheduleLogs() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Job Name</TableHead>
+                  <TableHead>Schedule Name</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Start Time</TableHead>
                   <TableHead>Duration</TableHead>
@@ -197,7 +197,7 @@ export default function ScheduleLogs() {
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
                         {getStatusIcon(log.status)}
-                        {log.jobName}
+                        {log.scheduleName}
                       </div>
                     </TableCell>
                     <TableCell>{getStatusBadge(log.status)}</TableCell>
@@ -221,7 +221,7 @@ export default function ScheduleLogs() {
                         </DialogTrigger>
                         <DialogContent className="max-w-2xl">
                           <DialogHeader>
-                            <DialogTitle>Execution Details - {log.jobName}</DialogTitle>
+                            <DialogTitle>Execution Details - {log.scheduleName}</DialogTitle>
                             <DialogDescription>Detailed information about this pipeline execution</DialogDescription>
                           </DialogHeader>
                           {selectedLog && (

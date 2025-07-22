@@ -11,40 +11,37 @@ import { DashboardLayout } from "@/components/dashboard-layout"
 import Link from "next/link"
 
 export default function PythonTransformation() {
-  const [pythonCode, setPythonCode] = useState(`# Example: Data transformation with Python/PySpark
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import *
+  const [code, setCode] = useState(`# Example: Python/PySpark data transformation
 import pandas as pd
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, sum, avg, when
 
-# Initialize Spark Session
+# Initialize Spark session
 spark = SparkSession.builder.appName("DataTransformation").getOrCreate()
 
-# Load data
-df = spark.read.table("source_table")
+# Read data from Silver layer
+df = spark.read.table("silver.customer_orders")
 
-# Data transformation operations
+# Data transformation
 transformed_df = df.select(
-    col("user_id"),
-    upper(trim(col("first_name"))).alias("first_name"),
-    upper(trim(col("last_name"))).alias("last_name"),
-    lower(trim(col("email_address"))).alias("email_address"),
-    when(col("age") < 18, "Minor")
-    .when((col("age") >= 18) & (col("age") <= 65), "Adult")
-    .otherwise("Senior").alias("age_group"),
-    date_format(col("created_at"), "yyyy-MM-dd").alias("registration_date"),
-    datediff(current_date(), col("created_at")).alias("days_since_registration")
-).filter(
-    col("email_address").isNotNull() & 
-    col("email_address").contains("@") &
-    col("created_at") >= "2024-01-01"
-).orderBy(col("created_at").desc())
+    col("customer_id"),
+    col("product_id"),
+    col("order_quantity"),
+    col("unit_price"),
+    (col("order_quantity") * col("unit_price")).alias("total_amount"),
+    when(col("order_quantity") > 100, "High Volume")
+    .when(col("order_quantity") > 50, "Medium Volume")
+    .otherwise("Low Volume").alias("volume_category")
+).groupBy("customer_id", "product_id", "volume_category").agg(
+    sum("order_quantity").alias("total_quantity"),
+    avg("unit_price").alias("avg_price"),
+    sum("total_amount").alias("total_revenue")
+)
 
-# Show results
-transformed_df.show(20)
-print(f"Total records processed: {transformed_df.count()}")
+# Write to Gold layer
+transformed_df.write.mode("overwrite").saveAsTable("gold.customer_product_summary")
 
-# Save results
-transformed_df.write.mode("overwrite").saveAsTable("transformed_data")`)
+print("Transformation completed successfully!")`)
 
   const [selectedEnvironment, setSelectedEnvironment] = useState("")
   const [connectedEnvironment, setConnectedEnvironment] = useState(null)
@@ -56,43 +53,36 @@ transformed_df.write.mode("overwrite").saveAsTable("transformed_data")`)
     if (!selectedEnvironment) return
 
     setIsConnecting(true)
-
     // Simulate connection process
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    setConnectedEnvironment({
-      type: selectedEnvironment,
-      name: `${selectedEnvironment} Environment`,
-      status: "Connected",
-      version: selectedEnvironment === "Python" ? "3.9.0" : "3.4.0",
-    })
-    setIsConnecting(false)
+    setTimeout(() => {
+      setConnectedEnvironment({
+        type: selectedEnvironment,
+        version: selectedEnvironment === "Python" ? "3.9.7" : "3.4.0",
+        status: "Connected",
+      })
+      setIsConnecting(false)
+      setSelectedEnvironment("")
+    }, 1500)
   }
 
   const handleRun = async () => {
-    if (!connectedEnvironment) {
-      setExecutionResult({
-        success: false,
-        message: "Please connect to an execution environment first.",
-      })
-      return
-    }
+    if (!connectedEnvironment) return
 
     setIsRunning(true)
     setExecutionResult(null)
 
     // Simulate code execution
-    await new Promise((resolve) => setTimeout(resolve, 3000))
-
-    // Simulate success/failure
-    const success = Math.random() > 0.2
-    setExecutionResult({
-      success,
-      message: success
-        ? `Code executed successfully in ${connectedEnvironment.type} environment! Processed 2,847 records in 12.3 seconds.`
-        : `Execution failed in ${connectedEnvironment.type} environment. ImportError: No module named 'pyspark.sql'`,
-    })
-    setIsRunning(false)
+    setTimeout(() => {
+      const success = Math.random() > 0.2
+      setExecutionResult({
+        success,
+        message: success
+          ? "Code executed successfully! Data transformation completed."
+          : "Code execution failed. Import error: module 'pyspark' not found.",
+        executionTime: success ? "4.7s" : null,
+      })
+      setIsRunning(false)
+    }, 3000)
   }
 
   const getCompilerTitle = () => {
@@ -124,7 +114,7 @@ transformed_df.write.mode("overwrite").saveAsTable("transformed_data")`)
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Side - Code Compiler */}
+          {/* Left Side - Code Editor */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -134,8 +124,8 @@ transformed_df.write.mode("overwrite").saveAsTable("transformed_data")`)
             </CardHeader>
             <CardContent>
               <Textarea
-                value={pythonCode}
-                onChange={(e) => setPythonCode(e.target.value)}
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
                 placeholder="Write your Python/PySpark code here..."
                 className="min-h-[400px] font-mono text-sm"
               />
@@ -144,25 +134,19 @@ transformed_df.write.mode("overwrite").saveAsTable("transformed_data")`)
 
           {/* Right Side - Environment Management */}
           <div className="space-y-4">
-            {/* Connected Environment Display */}
+            {/* Connected Environment */}
             {connectedEnvironment && (
               <Card>
                 <CardHeader>
                   <CardTitle>Connected Environment</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div>
-                        <p className="font-medium">{connectedEnvironment.name}</p>
-                        <div className="flex items-center gap-2">
-                          <Badge variant={connectedEnvironment.type === "PySpark" ? "default" : "secondary"}>
-                            {connectedEnvironment.type} {connectedEnvironment.version}
-                          </Badge>
-                          <span className="text-sm text-green-600">{connectedEnvironment.status}</span>
-                        </div>
-                      </div>
-                    </div>
+                  <div className="p-3 border rounded-lg">
+                    <div className="font-medium text-sm">{connectedEnvironment.type}</div>
+                    <div className="text-xs text-muted-foreground">Version: {connectedEnvironment.version}</div>
+                    <Badge variant="outline" className="text-xs text-green-600 mt-1">
+                      {connectedEnvironment.status}
+                    </Badge>
                   </div>
                 </CardContent>
               </Card>
@@ -177,7 +161,7 @@ transformed_df.write.mode("overwrite").saveAsTable("transformed_data")`)
                 <div className="flex gap-2">
                   <Select value={selectedEnvironment} onValueChange={setSelectedEnvironment}>
                     <SelectTrigger className="flex-1">
-                      <SelectValue placeholder="Select execution environment" />
+                      <SelectValue placeholder="Select environment" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Python">Python</SelectItem>
@@ -192,8 +176,20 @@ transformed_df.write.mode("overwrite").saveAsTable("transformed_data")`)
             </Card>
 
             {/* Run Button */}
-            <Button className="w-full" size="lg" onClick={handleRun} disabled={isRunning || !connectedEnvironment}>
-              {isRunning ? "Running..." : "Run"}
+            <Button
+              onClick={handleRun}
+              disabled={!connectedEnvironment || isRunning || !code.trim()}
+              className="w-full"
+              size="lg"
+            >
+              {isRunning ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Running...
+                </>
+              ) : (
+                "Run"
+              )}
             </Button>
 
             {/* Execution Result */}
@@ -205,11 +201,14 @@ transformed_df.write.mode("overwrite").saveAsTable("transformed_data")`)
                     : "bg-red-50 border-red-200 text-red-800"
                 }`}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 mb-2">
                   {executionResult.success ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
-                  <p className="font-medium">{executionResult.success ? "Success" : "Error"}</p>
+                  <span className="font-medium">{executionResult.success ? "Success" : "Error"}</span>
                 </div>
-                <p className="mt-1 text-sm">{executionResult.message}</p>
+                <p className="text-sm">{executionResult.message}</p>
+                {executionResult.executionTime && (
+                  <p className="text-xs mt-2 opacity-75">Execution time: {executionResult.executionTime}</p>
+                )}
               </div>
             )}
           </div>
